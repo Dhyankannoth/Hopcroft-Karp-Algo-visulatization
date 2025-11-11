@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopcroft-Karp Algorithm</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ Hopcroft-Karp Algorithm ⚡</h1>
+        <p class="subtitle">Maximum Bipartite Matching Visualizer</p>
+    </div>
+
+    <div class="container">
+        <div class="panel controls">
+            <h3>Controls</h3>
+            <div class="btn-group">
+                <button onclick="generateGraph()">🎲 Generate Random Graph</button>
+                <button onclick="runAlgorithm()" id="runBtn">▶️ Run Algorithm</button>
+                <button onclick="stepAlgorithm()" id="stepBtn">⏭️ Step</button>
+                <button onclick="resetVisualization()">🔄 Reset</button>
+                <button onclick="showComparison()">📊 Compare Algorithms</button>
+            </div>
+        </div>
+
+        <div class="panel info-panel">
+            <h3>Algorithm Status</h3>
+            <div id="status">Ready to start...</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Maximum Matching</div>
+                    <div class="stat-value" id="matching">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Current Phase</div>
+                    <div class="stat-value" id="phase">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Iterations</div>
+                    <div class="stat-value" id="iterations">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Complexity</div>
+                    <div class="stat-value" style="font-size: 1em;">O(√V × E)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color" style="background:#38bdf8;"></div><span>Left Set</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#60a5fa;"></div><span>Right Set</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#10b981;"></div><span>Matched Edge</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#9ca3af;"></div><span>Available Edge</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#facc15;"></div><span>Augmenting Path</span></div>
+            </div>
+        </div>
+
+        <div class="panel description">
+            <h3>About the Hopcroft-Karp Algorithm</h3>
+            <p><strong>Problem:</strong> Find the maximum matching in a bipartite graph - the largest set of edges with no shared vertices.</p>
+            <p><strong>Use Cases:</strong> Job assignment systems, recommendation engines, resource allocation, etc.</p>
+            <p><strong>Why It's Powerful:</strong> Runs in O(√V × E) time — much faster than naive approaches by finding multiple augmenting paths each phase.</p>
+            <p><strong>How It Works:</strong> Alternates between BFS (for shortest augmenting paths) and DFS (to augment them), increasing the matching until none remain.</p>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div class="modal" id="comparisonModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeComparison()">×</button>
+            
+            <div class="comparison-header">
+                <h2>🔥 Algorithm Comparison</h2>
+                <p>How Hopcroft-Karp outperforms other bipartite matching algorithms</p>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="algo-card">
+                    <h3>🐌 Naive Greedy</h3>
+                    <div class="algo-detail">
+                        <strong>Complexity:</strong>
+                        <span>O(V × E)</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Method:</strong>
+                        <span>Finds one augmenting path at a time using simple DFS</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Iterations:</strong>
+                        <span>Up to V iterations (one per match)</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Problem:</strong>
+                        <span>Repeats work, explores same vertices multiple times</span>
+                    </div>
+                </div>
+
+                <div class="algo-card">
+                    <h3>⚡ Ford-Fulkerson</h3>
+                    <div class="algo-detail">
+                        <strong>Complexity:</strong>
+                        <span>O(V × E) or O(E × f)</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Method:</strong>
+                        <span>Max-flow approach, finds one path per iteration</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Iterations:</strong>
+                        <span>Up to V iterations</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Problem:</strong>
+                        <span>Not optimized for bipartite structure, single path per phase</span>
+                    </div>
+                </div>
+
+                <div class="algo-card highlight">
+                    <h3>🚀 Hopcroft-Karp</h3>
+                    <div class="algo-detail">
+                        <strong>Complexity:</strong>
+                        <span>O(√V × E)</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Method:</strong>
+                        <span>Finds MULTIPLE shortest augmenting paths simultaneously</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Iterations:</strong>
+                        <span>Only √V iterations!</span>
+                    </div>
+                    <div class="algo-detail">
+                        <strong>Advantage:</strong>
+                        <span>Exploits bipartite structure, exponentially fewer iterations</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="complexity-comparison">
+                <h3>Time Complexity Comparison</h3>
+                <table class="complexity-table">
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Time Complexity</th>
+                            <th>Example (V=10,000, E=50,000)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Naive Greedy</td>
+                            <td>O(V × E)</td>
+                            <td>500,000,000 operations</td>
+                        </tr>
+                        <tr>
+                            <td>Ford-Fulkerson</td>
+                            <td>O(V × E)</td>
+                            <td>500,000,000 operations</td>
+                        </tr>
+                        <tr>
+                            <td>Hungarian Algorithm</td>
+                            <td>O(V³)</td>
+                            <td>1,000,000,000,000 operations</td>
+                        </tr>
+                        <tr class="best">
+                            <td><strong>Hopcroft-Karp</strong></td>
+                            <td><strong>O(√V × E)</strong></td>
+                            <td><strong class="best">5,000,000 operations (100x faster!)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="benchmark-section">
+                <h3>⏱️ Live Benchmark Test</h3>
+                <p style="color: #93c5fd; margin-bottom: 15px;">
+                    Compare algorithm performance on your current graph
+                </p>
+                <div class="benchmark-controls">
+                    <button onclick="runBenchmark()">🏃 Run Benchmark</button>
+                    <button onclick="generateLargeGraph(50, 50)">Generate Small Graph (50 nodes)</button>
+                    <button onclick="generateLargeGraph(100, 100)">Generate Medium Graph (100 nodes)</button>
+                    <button onclick="generateLargeGraph(200, 200)">Generate Large Graph (200 nodes)</button>
+                </div>
+                <div class="benchmark-results" id="benchmarkResults">
+                    <div class="benchmark-item">
+                        <div class="label">Graph Size</div>
+                        <div class="value" id="graphSize">-</div>
+                    </div>
+                    <div class="benchmark-item">
+                        <div class="label">Naive Greedy</div>
+                        <div class="value" id="naiveTime">-</div>
+                    </div>
+                    <div class="benchmark-item">
+                        <div class="label">Ford-Fulkerson</div>
+                        <div class="value" id="fordTime">-</div>
+                    </div>
+                    <div class="benchmark-item winner">
+                        <div class="label">Hopcroft-Karp</div>
+                        <div class="value" id="hopcroftTime">-</div>
+                    </div>
+                    <div class="benchmark-item">
+                        <div class="label">Speedup vs Naive</div>
+                        <div class="value" id="speedup">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-comparison">
+                <h3>🎬 Visual Algorithm Race</h3>
+                <p style="color: #93c5fd; margin-bottom: 15px;">
+                    Watch all three algorithms compete side-by-side in real-time
+                </p>
+                <div class="benchmark-controls">
+                    <button onclick="startVisualRace()">🏁 Start Visual Race</button>
+                    <button onclick="stopVisualRace()">⏸️ Stop</button>
+                </div>
+                <div class="race-canvas-container">
+                    <canvas id="raceCanvas"></canvas>
+                </div>
+                <div class="race-stats" id="raceStats">
+                    <div class="race-stat">
+                        <div class="race-label" style="color: #ef4444;">Naive Greedy</div>
+                        <div class="race-progress">
+                            <div class="race-bar" id="naiveBar" style="background: #ef4444;"></div>
+                        </div>
+                        <div class="race-info">
+                            <span id="naiveMatches">0 matches</span>
+                            <span id="naiveIter">0 iterations</span>
+                        </div>
+                    </div>
+                    <div class="race-stat">
+                        <div class="race-label" style="color: #f59e0b;">Ford-Fulkerson</div>
+                        <div class="race-progress">
+                            <div class="race-bar" id="fordBar" style="background: #f59e0b;"></div>
+                        </div>
+                        <div class="race-info">
+                            <span id="fordMatches">0 matches</span>
+                            <span id="fordIter">0 iterations</span>
+                        </div>
+                    </div>
+                    <div class="race-stat">
+                        <div class="race-label" style="color: #10b981;">Hopcroft-Karp</div>
+                        <div class="race-progress">
+                            <div class="race-bar" id="hopcroftBar" style="background: #10b981;"></div>
+                        </div>
+                        <div class="race-info">
+                            <span id="hopcroftMatches">0 matches</span>
+                            <span id="hopcroftIter">0 iterations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
