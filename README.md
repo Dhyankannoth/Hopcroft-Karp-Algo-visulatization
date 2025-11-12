@@ -37,12 +37,6 @@ Time Complexity: O(√V × E)
 
 Space Complexity: O(V + E)
 
-📘 Description
-
-This project provides an intuitive way to understand how the Hopcroft–Karp algorithm works and why it outperforms simpler algorithms.
-It visually demonstrates the alternating BFS and DFS phases used to efficiently find multiple augmenting paths in one iteration.
-Useful for students, educators, and researchers studying graph algorithms and optimization.
-
 📂 How to Run
 
 Clone or download the repository
